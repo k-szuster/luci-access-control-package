@@ -12,7 +12,6 @@ Tested on OpenWrt BB and CC.
 Source repository
 =================
     https://github.com/k-szuster/luci-access-control-package
-
 See also:
     https://github.com/k-szuster/luci-access-control
 for a luci-app version of the same software.
