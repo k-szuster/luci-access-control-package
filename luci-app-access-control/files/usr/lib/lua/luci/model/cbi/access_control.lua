@@ -17,8 +17,8 @@ local CONFIG_FILE_AC    = "access_control"
 local ma, mr, s, o
 
 ma = Map(CONFIG_FILE_AC, translate("Internet Access Control"),
-    translate("Access Control allows you to manage internet access for specific local hosts.<br>\
-       Each rule defines which user has blocked access to the internet. The rules may be active parmanently or in certain time of day.<br>\
+    translate("Access Control allows you to manage internet access for specific local hosts.<br/>\
+       Each rule defines which user has blocked access to the internet. The rules may be active parmanently or in certain time of day.<br/>\
        The rules may also be restricted to specific days of the week."))
 if CONFIG_FILE_AC==CONFIG_FILE_RULES then
     mr = ma
