@@ -24,6 +24,10 @@ To install without building ipk package
 ---------------------------------------
 Copy contents of luci-app-access-control/files to / directory on target machine.
 
+To download prebuilt package
+----------------------------
+Visit: https://github.com/k-szuster/luci-access-control-package/releases
+
 To build the package for OpenWrt
 --------------------------------
 - In your openwrt source directory copy feeds.conf.default to feeds.conf.
