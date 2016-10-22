@@ -3,22 +3,18 @@
 #
 #    This file is part of luci-access-control
 #
-#set -x
- 
 START=70
 STOP=15
-PROG=/root/inetacd.lua
+PROG=/usr/sbin/inetacd.lua
 
 SERVICE_MATCH_EXEC=
 SERVICE_MATCH_NAME=1
 SERVICE_DAEMONIZE=1
 
 start() {        
-        echo start
 	service_start $PROG
 }                 
  
 stop() {          
-        echo stop
         service_stop $PROG
 }
