@@ -33,25 +33,6 @@ else
     mr = Map(CONFIG_FILE_RULES)
 end
 
-
---[[
-function mr.on_after_commit (m)  -- on_before_apply
-    local tickets
-    m.uci:foreach (CONFIG_FILE_RULES, "rule",
-        function (s)
-            if s.ac_suspend then
-                tickets = true
-                return false
-            end
-        end)
-    if tickets then  
-        luci.sys.call("exec /etc/init.d/inetac restart > /dev/null 2> /dev/null")
-    else
-        luci.sys.call("exec /etc/init.d/inetac stop > /dev/null 2> /dev/null")
-    end        
-end
-]]--
-
 --=============================================================================================
 --  General section
 
