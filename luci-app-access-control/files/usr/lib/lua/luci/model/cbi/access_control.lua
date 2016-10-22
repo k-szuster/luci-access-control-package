@@ -1,7 +1,7 @@
 --[[
 LuCI - Lua Configuration Interface - Internet access control
 
-Copyright 2015 Krzysztof Szuster.
+Copyright 2015,2016 Krzysztof Szuster.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,21 +12,15 @@ You may obtain a copy of the License at
 $Id$
 ]]--
 
+local CONFIG_FILE_RULES = "firewall"  
+local CONFIG_FILE_AC    = "access_control"
+local ma, mr, s, o
 
-function debugt (tab)
-    for k, v in pairs(tab) do
-        io.stderr:write ("   "..k..'='..tostring(v)..'\n')
-    end
-end    
-
-function time_elapsed (tend) 
+local function time_elapsed (tend) 
     local now = math.floor (os.time() / 60)  --  [min]
     return now > math.floor (tonumber (tend) / 60) 
 end
 
-local CONFIG_FILE_RULES = "firewall"  
-local CONFIG_FILE_AC    = "access_control"
-local ma, mr, s, o
 
 ma = Map(CONFIG_FILE_AC, translate("Internet Access Control"),
     translate("Access Control allows you to manage internet access for specific local hosts.<br/>\
@@ -40,6 +34,7 @@ else
 end
 
 
+--[[
 function mr.on_after_commit (m)  -- on_before_apply
     local tickets
     m.uci:foreach (CONFIG_FILE_RULES, "rule",
@@ -50,13 +45,12 @@ function mr.on_after_commit (m)  -- on_before_apply
             end
         end)
     if tickets then  
-io.stderr:write ('(re)starting inetacd\n')
         luci.sys.call("exec /etc/init.d/inetac restart > /dev/null 2> /dev/null")
---        os.execute ("/etc/init.d/inetac restart > /dev/null 2> /dev/null")
     else
         luci.sys.call("exec /etc/init.d/inetac stop > /dev/null 2> /dev/null")
     end        
 end
+]]--
 
 --=============================================================================================
 --  General section
@@ -95,7 +89,6 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
 
 -----------------------------------------------------------        
     o = s:option(Flag, "ac_enabled", translate("Enabled"))
-    local o_ac_enabled = o
         o.default = '1'
         o.rmempty  = false
 
@@ -169,7 +162,7 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         o.rmempty = true  -- do not validae blank
         o.validate = validate_time
         o.size = 5
-if false then     
+--[[     
         o.template = "cbi_timeval"            -- Template name from above
         o.formvalue = function(self, section) -- This will assemble the parts
             local hour = self.map:formvalue(self:cbid(section) .. ".hour")
@@ -180,7 +173,7 @@ if false then
                 return nil
             end
         end        
-end
+]]--
 -----------------------------------------------------------        
     local Days = {'mon','tue','wed','thu','fri','sat','sun'}
     local Days1 = translate('MTWTFSS')
@@ -206,7 +199,8 @@ end
      
         --  prevent saveing option in config file   
         function o.write(self, section, value)
-            self.map:set(section, self.option, '')
+--            self.map:set(section, self.option, '')
+            self.map:del (section, self.option)
         end
     end
   
@@ -244,7 +238,6 @@ end
                 else
                     local tend = os.date ("%H:%M", ac_susp)
                     self.inputtitle = tend.."\n"
-    --                self.inputtitle = self.inputtitle..translate("Add")
                     self.inputtitle = self.inputtitle..translate("Cancel")
                     self.inputstyle = 'remove'
                 end
@@ -262,7 +255,7 @@ end
             local t = o_ticket.map:formvalue (key)
             t =  tonumber (t) * 60  --  to seconds
             if ac_susp then
---                ac_susp = tonumber (ac_susp) + t
+--                ac_susp = ac_susp + t
                 ac_susp = ""
             else
                 ac_susp = os.time() + t
