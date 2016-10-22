@@ -49,11 +49,7 @@ print (s.name..": zostało "..jeszcze)
 end
 
 while true do
-    local next = check()
-    next = 60
-    if not next then
-        break
-    end
-    os.execute ("exec sleep "..next)
+    check()
+    os.execute ("exec sleep 60")
 end    
 
