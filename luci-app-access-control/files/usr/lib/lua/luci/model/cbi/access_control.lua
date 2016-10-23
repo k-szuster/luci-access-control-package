@@ -203,7 +203,7 @@ io.stderr:write (' write '..self.option..'\n')
         end         
         local o = s_rule:option(Flag, day, label)
 --        o.default = '1'
-        o.rmempty = false  --  always call write
+--        o.rmempty = false  --  always call write
         
         -- read from weekdays actually
         function o.cfgvalue (self, section)
@@ -215,8 +215,9 @@ io.stderr:write (' write '..self.option..'\n')
         end
      
         --  prevent saveing option in config file   
-        function o.write (self, ...)
+        function o.write(self, section, value)        
 io.stderr:write (' write '..self.option..'\n')
+            self.map:del (section, self.option)
         end
     end
   
