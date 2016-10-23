@@ -12,9 +12,24 @@ You may obtain a copy of the License at
 $Id$
 ]]--
 
+function printtab (s)
+    if type (s)=="string" then
+        io.stderr:write (s.."\n")
+    else
+        for k,v in pairs (s) do
+            if type (v)=="table" then
+                io.stderr:write (k.."[]:\n")
+    --            printtab (v)
+            else
+                io.stderr:write (k..": "..tostring(v).."\n")
+            end
+        end
+    end
+end    
+
 local CONFIG_FILE_RULES = "firewall"  
 local CONFIG_FILE_AC    = "access_control"
-local ma, mr, s, o
+local mr, ma, o 
 
 local function time_elapsed (tend) 
     local now = math.floor (os.time() / 60)  --  [min]
@@ -22,7 +37,7 @@ local function time_elapsed (tend)
 end
 
 
-ma = Map(CONFIG_FILE_AC, translate("Internet Access Control"),
+local ma = Map(CONFIG_FILE_AC, translate("Internet Access Control"),
     translate("Access Control allows you to manage internet access for specific local hosts.<br/>\
        Each rule defines which user has blocked access to the internet. The rules may be active permanently or in certain time of day.<br/>\
        The rules may also be restricted to specific days of the week.<br/>\
@@ -36,11 +51,11 @@ end
 --=============================================================================================
 --  General section
 
-s = ma:section(NamedSection, "general", "access_control", translate("General settings"))
-    local o_global_enable = s:option(Flag, "enabled", translate("Enabled"),
+local s_gen = ma:section(NamedSection, "general", "access_control", translate("General settings"))
+    local o_global_enable = s_gen:option(Flag, "enabled", translate("Enabled"),
         translate ("Must be set to enable the internet access blocking"))
         o_global_enable.rmempty = false
-    local o_ticket = s:option(Value, "ticket", translate("Ticket time [min]"), 
+    local o_ticket = s_gen:option(Value, "ticket", translate("Ticket time [min]"), 
 	      translate("Time granted when a ticket is issued"))
         o_ticket.datatype = "uinteger"
         o_ticket.default = 60
@@ -48,34 +63,55 @@ s = ma:section(NamedSection, "general", "access_control", translate("General set
 --=============================================================================================
 -- Rule table section
 
-s = mr:section(TypedSection, "rule", translate("Client Rules"))
-    s.addremove = true
-    s.anonymous = true
---    s.sortable  = true
-    s.template = "cbi/tblsection"
+local s_rule = mr:section(TypedSection, "rule", translate("Client Rules"))
+    s_rule.addremove = true
+    s_rule.anonymous = true
+--    s_rule.sortable  = true
+    s_rule.template = "cbi/tblsection"
     -- hidden option
-    s.defaults.ac_suspend = nil
+    s_rule.defaults.ac_suspend = nil
     -- hidden, constant options
-    s.defaults.enabled = "0"
-    s.defaults.src     = "*" --"lan", "guest" or enything on local side
-    s.defaults.dest    = "wan"
-    s.defaults.target  = "REJECT"
-    s.defaults.proto    = "0"
-    s.defaults.extra = "--kerneltz"
+    s_rule.defaults.enabled = "0"
+    s_rule.defaults.src     = "*" --"lan", "guest" or enything on local side
+    s_rule.defaults.dest    = "wan"
+    s_rule.defaults.target  = "REJECT"
+    s_rule.defaults.proto    = "0"
+    s_rule.defaults.extra = "--kerneltz"
     
     -- only AC-related rules
-    s.filter = function(self, section)
+    s_rule.filter = function (self, section)
 	      return self.map:get (section, "ac_enabled") ~= nil
     end
-
+--[[
+    s_rule.validate = function (self, sectionid)
+io.stderr:write (sectionid..'\nself:\n')
+printtab (self)
+io.stderr:write ('\nfields:\n')
+printtab ((self.fields))
+--        local field, obj
+--        local values = { }
+--    
+--        for field, obj in pairs(self.fields) do
+--            local fieldval = obj:formvalue(sectionid)
+--            if not values[fieldval] then
+--                values[fieldval] = true
+--            else
+--                return nil -- raise error
+--            end
+--        end
+        return sectionid -- signal success
+    end
+]]--
 -----------------------------------------------------------        
-    o = s:option(Flag, "ac_enabled", translate("Enabled"))
+    o = s_rule:option(Flag, "ac_enabled", translate("Enabled"))
         o.default = '1'
         o.rmempty  = false
 
         -- ammend "enabled" option and set weekdays  
         function o.write(self, section, value)
-            wd_write (self, section, value)
+io.stderr:write (' write '..self.option..'\n')
+        
+            wd_write (self, section)
             
             local key = o_global_enable:cbid (o_global_enable.section.section)
             --  "cbid.access_control.general.enabled"
@@ -105,7 +141,7 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         end
       
 -----------------------------------------------------------        
-    o = s:option(Value, "name", translate("Description"))
+    o = s_rule:option(Value, "name", translate("Description"))
 --        o.rmempty = false  -- force validate
 --        -- better validate, then: o.datatype = "minlength(1)"
 --        o.validate = function(self, val, sid)
@@ -116,7 +152,7 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
 --        end
         
 -----------------------------------------------------------        
-     o = s:option(Value, "src_mac", translate("MAC address")) 
+     o = s_rule:option(Value, "src_mac", translate("MAC address")) 
         o.rmempty = false
         o.datatype = "macaddr"
         luci.sys.net.mac_hints(function(mac, name)
@@ -135,11 +171,11 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
             return nil, translate("Time value must be HH:MM or empty")
         end
     end
-    o = s:option(Value, "start_time", translate("Start time"))
+    o = s_rule:option(Value, "start_time", translate("Start time"))
         o.rmempty = true  -- do not validae blank
         o.validate = validate_time 
         o.size = 5
-    o = s:option(Value, "stop_time", translate("End time"))
+    o = s_rule:option(Value, "stop_time", translate("End time"))
         o.rmempty = true  -- do not validae blank
         o.validate = validate_time
         o.size = 5
@@ -165,13 +201,13 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         if nday==7 then
             label = '<font color="red">'..label..'</font>'
         end         
-        local o = s:option(Flag, day, label)
-        o.default = '1'
+        local o = s_rule:option(Flag, day, label)
+--        o.default = '1'
         o.rmempty = false  --  always call write
         
         -- read from weekdays actually
-        function o.cfgvalue(self, s)
-            local days = self.map:get (s, "weekdays")
+        function o.cfgvalue (self, section)
+            local days = self.map:get (section, "weekdays")
             if days==nil then
                 return '1'
             end
@@ -179,9 +215,8 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         end
      
         --  prevent saveing option in config file   
-        function o.write(self, section, value)
---            self.map:set(section, self.option, '')
-            self.map:del (section, self.option)
+        function o.write (self, ...)
+io.stderr:write (' write '..self.option..'\n')
         end
     end
   
@@ -189,8 +224,8 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         make_day (i)
     end   
     
-    function wd_write(self, section, value)
-        value=''
+    function wd_write(self, section)
+        local value=''
         local cnt=0
         for _,day in ipairs (Days) do
             local key = "cbid."..self.map.config.."."..section.."."..day
@@ -207,7 +242,7 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
     end
 
 -----------------------------------------------------------        
-    o = s:option(Button, "_ticket", translate("Ticket")) 
+    o = s_rule:option(Button, "_ticket", translate("Ticket")) 
         o:depends ("ac_enabled", "1")
 
         function o.cfgvalue(self, section)
@@ -230,10 +265,11 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         end
                 
         function o.write(self, section, value)
+io.stderr:write (' write '..self.option..'\n')
             local ac_susp = self.map:get(section, "ac_suspend")
---io.stderr:write ("ac_suspend="..tostring(ac_susp)..'\n')
-            local key = o_ticket:cbid (o_ticket.section.section)
-            local t = o_ticket.map:formvalue (key)
+--            local key = o_ticket:cbid (o_ticket.section.section)
+--            local t = o_ticket.map:formvalue (key)
+            local t = o_ticket.map:get (o_ticket.section.section, o_ticket.option)  --  "general", "ticket"
             t =  tonumber (t) * 60  --  to seconds
             if ac_susp then
 --                ac_susp = ac_susp + t
@@ -246,6 +282,13 @@ s = mr:section(TypedSection, "rule", translate("Client Rules"))
         end
 
 --========================================================================================================
+
+function mr.on_before_commit(self)
+    io.stderr:write ('before commit\n')
+end
+function mr.on_after_commit(self)
+    io.stderr:write ('after commit\n')
+end
 
 if CONFIG_FILE_AC==CONFIG_FILE_RULES then
   return ma

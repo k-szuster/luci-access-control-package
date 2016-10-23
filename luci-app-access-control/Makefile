@@ -52,5 +52,19 @@ define Package/luci-app-access-control/install
 	$(CP) ./files/* $(1)/
 endef
 
+define Package/luci-app-access-control/postinst
+#!/bin/sh
+/etc/init.d/inetac enable
+/etc/init.d/inetac start
+exit 0
+endef
+
+define Package/luci-app-access-control/prerm
+#!/bin/sh
+/etc/init.d/inetac stop
+/etc/init.d/inetac disable
+exit 0
+endef
+
 $(eval $(call BuildPackage,luci-app-access-control))
 
