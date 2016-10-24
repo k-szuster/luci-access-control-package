@@ -1,0 +1,32 @@
+<%+cbi/valueheader%>
+
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".mon") .. attr("id", cbid ..".mon") .. (self:cfgvalue(section):find("mon") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".tue") .. attr("id", cbid ..".tue") .. (self:cfgvalue(section):find("tue") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".wed") .. attr("id", cbid ..".wed") .. (self:cfgvalue(section):find("wed") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".thu") .. attr("id", cbid ..".thu") .. (self:cfgvalue(section):find("thu") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".fri") .. attr("id", cbid ..".fri") .. (self:cfgvalue(section):find("fri") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".sat") .. attr("id", cbid ..".sat") .. (self:cfgvalue(section):find("sat") and "checked" or "")
+%> />
+<input type="checkbox" class="cbi-input-checkbox" onchange="cbi_d_update(this.id)"
+<%= 
+    attr("name", cbid .. ".sun") .. attr("id", cbid ..".sun") .. (self:cfgvalue(section):find("sun") and "checked" or "")
+%> />
+
+<%+cbi/valuefooter%>

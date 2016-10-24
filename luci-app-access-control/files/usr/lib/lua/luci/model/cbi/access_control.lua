@@ -29,6 +29,8 @@ end
 
 local CONFIG_FILE_RULES = "firewall"  
 local CONFIG_FILE_AC    = "access_control"
+local Days = {'mon','tue','wed','thu','fri','sat','sun'}
+local Days1 = translate('MTWTFSS')
 local mr, ma, o 
 
 local function time_elapsed (tend) 
@@ -102,7 +104,8 @@ printtab ((self.fields))
         return sectionid -- signal success
     end
 ]]--
------------------------------------------------------------        
+-----------------------------------------------------------               
+        
     o = s_rule:option(Flag, "ac_enabled", translate("Enabled"))
         o.default = '1'
         o.rmempty  = false
@@ -192,8 +195,38 @@ io.stderr:write (' write '..self.option..'\n')
         end        
 ]]--
 -----------------------------------------------------------        
-    local Days = {'mon','tue','wed','thu','fri','sat','sun'}
-    local Days1 = translate('MTWTFSS')
+
+if true then
+    o = s_rule:option (Value, "weekdays", "Week days")
+        o.template = "cbi_weekdays"
+--        o.size = 20
+                   
+        function o.cfgvalue (self, section)
+    	    return Value.cfgvalue (self, section) or "mon tue wed thu fri sat sun"
+        end
+        
+        function o.formvalue (self, section) -- This will assemble 7 checkboxes into a string
+            local s = ""
+            local cnt = 0
+            for _,day in pairs (Days) do
+                local val = self.map:formvalue (self:cbid(section) .. "."..day)
+--io.stderr:write (tostring (val)..'\n')            
+                if val then
+                    s = s.." "..day
+                    cnt = cnt +1
+                end
+            end
+            if cnt==7 then  --all days means no filtering
+                s = ""
+            end 
+--io.stderr:write ('wd='..tostring (s)..'\n')            
+            return s
+        end
+        
+    function wd_write(self, section)
+    end
+                
+else
     
     function make_day (nday)
         local day = Days[nday]
@@ -203,7 +236,7 @@ io.stderr:write (' write '..self.option..'\n')
         end         
         local o = s_rule:option(Flag, day, label)
 --        o.default = '1'
---        o.rmempty = false  --  always call write
+        o.rmempty = false  --  always call write
         
         -- read from weekdays actually
         function o.cfgvalue (self, section)
@@ -215,7 +248,7 @@ io.stderr:write (' write '..self.option..'\n')
         end
      
         --  prevent saveing option in config file   
-        function o.write(self, section, value)        
+        function o.write(self, section, value)
 io.stderr:write (' write '..self.option..'\n')
             self.map:del (section, self.option)
         end
@@ -241,6 +274,7 @@ io.stderr:write (' write '..self.option..'\n')
         end
         self.map:set(section, "weekdays", value)
     end
+end
 
 -----------------------------------------------------------        
     o = s_rule:option(Button, "_ticket", translate("Ticket")) 
