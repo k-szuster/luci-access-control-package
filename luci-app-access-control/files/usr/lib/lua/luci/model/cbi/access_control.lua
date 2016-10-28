@@ -12,20 +12,6 @@ You may obtain a copy of the License at
 $Id$
 ]]--
 
-function printtab (s)
-    if type (s)=="string" then
-        io.stderr:write (s.."\n")
-    else
-        for k,v in pairs (s) do
-            if type (v)=="table" then
-                io.stderr:write (k.."[]:\n")
-    --            printtab (v)
-            else
-                io.stderr:write (k..": "..tostring(v).."\n")
-            end
-        end
-    end
-end    
 
 local CONFIG_FILE_RULES = "firewall"  
 local CONFIG_FILE_AC    = "access_control"
@@ -84,36 +70,15 @@ local s_rule = mr:section(TypedSection, "rule", translate("Client Rules"))
     s_rule.filter = function (self, section)
 	      return self.map:get (section, "ac_enabled") ~= nil
     end
---[[
-    s_rule.validate = function (self, sectionid)
-io.stderr:write (sectionid..'\nself:\n')
-printtab (self)
-io.stderr:write ('\nfields:\n')
-printtab ((self.fields))
---        local field, obj
---        local values = { }
---    
---        for field, obj in pairs(self.fields) do
---            local fieldval = obj:formvalue(sectionid)
---            if not values[fieldval] then
---                values[fieldval] = true
---            else
---                return nil -- raise error
---            end
---        end
-        return sectionid -- signal success
-    end
-]]--
+
 -----------------------------------------------------------               
         
     o = s_rule:option(Flag, "ac_enabled", translate("Enabled"))
         o.default = '1'
         o.rmempty  = false
 
-        -- ammend "enabled" option and set weekdays  
-        function o.write(self, section, value)
-io.stderr:write (' write '..self.option..'\n')
-        
+        -- ammend "enabled" and "ac_suspend" optiona, and set weekdays  
+        function o.write(self, section, value)        
             wd_write (self, section)
             
             local key = o_global_enable:cbid (o_global_enable.section.section)
@@ -144,15 +109,7 @@ io.stderr:write (' write '..self.option..'\n')
         end
       
 -----------------------------------------------------------        
-    o = s_rule:option(Value, "name", translate("Description"))
---        o.rmempty = false  -- force validate
---        -- better validate, then: o.datatype = "minlength(1)"
---        o.validate = function(self, val, sid)
---            if type(val) ~= "string" or #val == 0 then
---                return nil, translate("Name must be specified!")
---            end
---            return val
---        end
+    s_rule:option(Value, "name", translate("Description"))
         
 -----------------------------------------------------------        
      o = s_rule:option(Value, "src_mac", translate("MAC address")) 
@@ -174,6 +131,7 @@ io.stderr:write (' write '..self.option..'\n')
             return nil, translate("Time value must be HH:MM or empty")
         end
     end
+    
     o = s_rule:option(Value, "start_time", translate("Start time"))
         o.rmempty = true  -- do not validae blank
         o.validate = validate_time 
@@ -182,52 +140,8 @@ io.stderr:write (' write '..self.option..'\n')
         o.rmempty = true  -- do not validae blank
         o.validate = validate_time
         o.size = 5
---[[     
-        o.template = "cbi_timeval"            -- Template name from above
-        o.formvalue = function(self, section) -- This will assemble the parts
-            local hour = self.map:formvalue(self:cbid(section) .. ".hour")
-            local min  = self.map:formvalue(self:cbid(section) .. ".min")
-            if hour and min and #hour > 0 and #min > 0 then
-                return hour .. ":" .. min
-            else
-                return nil
-            end
-        end        
-]]--
+        
 -----------------------------------------------------------        
-
-if true then
-    o = s_rule:option (Value, "weekdays", "Week days")
-        o.template = "cbi_weekdays"
---        o.size = 20
-                   
-        function o.cfgvalue (self, section)
-    	    return Value.cfgvalue (self, section) or "mon tue wed thu fri sat sun"
-        end
-        
-        function o.formvalue (self, section) -- This will assemble 7 checkboxes into a string
-            local s = ""
-            local cnt = 0
-            for _,day in pairs (Days) do
-                local val = self.map:formvalue (self:cbid(section) .. "."..day)
---io.stderr:write (tostring (val)..'\n')            
-                if val then
-                    s = s.." "..day
-                    cnt = cnt +1
-                end
-            end
-            if cnt==7 then  --all days means no filtering
-                s = ""
-            end 
---io.stderr:write ('wd='..tostring (s)..'\n')            
-            return s
-        end
-        
-    function wd_write(self, section)
-    end
-                
-else
-    
     function make_day (nday)
         local day = Days[nday]
         local label = Days1:sub (nday,nday)
@@ -235,7 +149,6 @@ else
             label = '<font color="red">'..label..'</font>'
         end         
         local o = s_rule:option(Flag, day, label)
---        o.default = '1'
         o.rmempty = false  --  always call write
         
         -- read from weekdays actually
@@ -249,7 +162,6 @@ else
      
         --  prevent saveing option in config file   
         function o.write(self, section, value)
-io.stderr:write (' write '..self.option..'\n')
             self.map:del (section, self.option)
         end
     end
@@ -263,7 +175,6 @@ io.stderr:write (' write '..self.option..'\n')
         local cnt=0
         for _,day in ipairs (Days) do
             local key = "cbid."..self.map.config.."."..section.."."..day
---io.stderr:write (tostring(key)..'='..tostring(mr:formvalue(key))..'\n')
             if mr:formvalue(key) then
                 value = value..' '..day
                 cnt = cnt+1
@@ -274,7 +185,6 @@ io.stderr:write (' write '..self.option..'\n')
         end
         self.map:set(section, "weekdays", value)
     end
-end
 
 -----------------------------------------------------------        
     o = s_rule:option(Button, "_ticket", translate("Ticket")) 
@@ -300,7 +210,6 @@ end
         end
                 
         function o.write(self, section, value)
-io.stderr:write (' write '..self.option..'\n')
             local ac_susp = self.map:get(section, "ac_suspend")
 --            local key = o_ticket:cbid (o_ticket.section.section)
 --            local t = o_ticket.map:formvalue (key)
@@ -313,17 +222,9 @@ io.stderr:write (' write '..self.option..'\n')
                 ac_susp = os.time() + t
             end
             self.map:set(section, "ac_suspend", ac_susp)
---io.stderr:write ("ac_suspend="..tostring(ac_susp)..'\n')
         end
 
 --========================================================================================================
-
-function mr.on_before_commit(self)
-    io.stderr:write ('before commit\n')
-end
-function mr.on_after_commit(self)
-    io.stderr:write ('after commit\n')
-end
 
 if CONFIG_FILE_AC==CONFIG_FILE_RULES then
   return ma

@@ -60,11 +60,22 @@ exit 0
 endef
 
 define Package/luci-app-access-control/prerm
-#!/bin/sh
-/etc/init.d/inetac stop
-/etc/init.d/inetac disable
-exit 0
+#!/usr/bin/lua
+require "uci"
+os.execute ("exec /etc/init.d/inetac stop")
+os.execute ("exec /etc/init.d/inetac disable")
+local x = uci.cursor()
+local commit = false
+x:foreach ("firewall", "rule", 
+    function(s) 
+        if s.ac_enabled~=nil  then
+            x:delete ("firewall", s[".name"])
+            commit = true
+        end
+    end)
+if commit then    
+    x:commit("firewall")
+end
 endef
 
 $(eval $(call BuildPackage,luci-app-access-control))
-
