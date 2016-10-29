@@ -4,10 +4,14 @@ Internet Access Control for OpenWrt
 This software is designed for OpwnWrt routers.
 It allows you to restrict the internet access for specific hosts in your LAN.
 You can block the internet access permanently or on schedule basis for any MAC address.
-After installation you'll find a new page in OpenWrt's GUI: Network/Access control.
+The schedule contains the  time of a day and the deys of the week.
+New in version 4:
+You can also issue a "ticket" for any blocked user. It gives him an extraordinary access to the internet for a given time.
 
 The software is a Luci app extending system's firewall, so it runs on any platform with no need of recompiling.
 Tested on OpenWrt BB and CC.
+
+After installation you'll find a new page in OpenWrt's GUI: Network/Access control.
 
 Screen shot
 -----------

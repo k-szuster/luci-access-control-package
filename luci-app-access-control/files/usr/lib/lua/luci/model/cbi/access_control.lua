@@ -29,7 +29,7 @@ local ma = Map(CONFIG_FILE_AC, translate("Internet Access Control"),
     translate("Access Control allows you to manage internet access for specific local hosts.<br/>\
        Each rule defines which user has blocked access to the internet. The rules may be active permanently or in certain time of day.<br/>\
        The rules may also be restricted to specific days of the week.<br/>\
-       Any host which is subject to the restrictions may obtain a ticket suspending the restriction for a specified time."))
+       Any host with blocket internet access may obtain a ticket suspending the restriction for a specified time."))
 if CONFIG_FILE_AC==CONFIG_FILE_RULES then
     mr = ma
 else
