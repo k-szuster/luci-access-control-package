@@ -35,7 +35,10 @@ copy contents of luci-app-access-control/files to / directory on target devicee.
 To build the package for OpenWrt
 --------------------------------
 - In your openwrt source directory copy feeds.conf.default to feeds.conf.
-- Edit feeds.conf: the line containing "src-link custom" should point to this directory (containing luci-app-access-control/).
+- Edit feeds.conf. Add the following line:
+
+	src-git custom https://github.com/k-szuster/luci-access-control-package.git
+
 - In your openwrt source directory:
     ./scripts/feeds update custom
     ./scripts/feeds install -a
