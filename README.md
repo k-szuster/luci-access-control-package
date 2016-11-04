@@ -10,6 +10,7 @@ You can also issue a "ticket" for any blocked user. It gives him an extraordinar
 
 The software is a Luci app extending system's firewall, so it runs on any platform with no need of recompiling.
 Tested on OpenWrt BB and CC.
+Note: due to a bug in CC, the times must be set in UTC, rather than local time.
 
 After installation you'll find a new page in OpenWrt's GUI: Network/Access control.
 
@@ -24,13 +25,12 @@ https://github.com/k-szuster/luci-access-control-package
 See also: https://github.com/k-szuster/luci-access-control
 for a luci-app version of the same software.
 
-To install without building ipk package
----------------------------------------
-Copy contents of luci-app-access-control/files to / directory on target machine.
-
-To download prebuilt package
+To install prebuilt package
 ----------------------------
 Visit: https://github.com/k-szuster/luci-access-control-package/releases
+Download ipk file to your device and install it with opkg.
+Or:
+copy contents of luci-app-access-control/files to / directory on target devicee.
 
 To build the package for OpenWrt
 --------------------------------
@@ -49,5 +49,3 @@ Here, you must include the following packages in your OpenWRT build for everythi
 
 - Call make to compile OpenWRT with the selected package installed.
 You'll find it in <openwrt>/bin/<target>/packages/custom/luci-app-access-control_....ipk file.
-
-- Install luci-app-access-control package on the OpenWrt router.
