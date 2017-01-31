@@ -40,11 +40,12 @@ To build the package for OpenWrt
 	src-git custom https://github.com/k-szuster/luci-access-control-package.git
 
 - In your openwrt source directory:
-    ./scripts/feeds update custom
-    ./scripts/feeds install -a
+
+	./scripts/feeds update custom ; ./scripts/feeds install -a
 
 - Run:
-make menuconfig
+
+	make menuconfig
 
 Here, you must include the following packages in your OpenWRT build for everything to work.
 
