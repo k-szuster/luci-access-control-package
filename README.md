@@ -28,6 +28,7 @@ for a luci-app version of the same software.
 To install prebuilt package
 ----------------------------
 Visit: https://github.com/k-szuster/luci-access-control-package/releases
+
 Download ipk file to your device and install it with opkg.
 Or:
 copy contents of luci-app-access-control/files to / directory on target devicee.
